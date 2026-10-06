@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>I Belong to You</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(180deg, #90cbf0 0%, #a2e8dd 50%, #b3f2c9 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    #starsCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.93);
+      backdrop-filter: blur(8px);
+      width: 100%;
+      max-width: 380px;
+      padding: 30px 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      text-align: center;
+      display: none;
+      animation: fadeIn 0.4s ease-in-out;
+      position: relative;
+      z-index: 10;
+    }
+
+    .card.landscape-card {
+      max-width: 720px;
+      padding: 25px 30px;
+      text-align: left;
+    }
+
+    .card.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1, h2 {
+      color: #2b2b2b;
+      margin-bottom: 10px;
+    }
+
+    .landscape-card h2 {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    p {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      background-color: #3CB371;
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 25px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn:hover {
+      background-color: #2e8b57;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .dots {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid #3CB371;
+    }
+
+    .dot.filled {
+      background-color: #3CB371;
+    }
+
+    .pin-error-msg {
+      font-size: 13px;
+      color: #e63946;
+      height: 20px;
+      margin-bottom: 10px;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .key {
+      background: #eef8f8;
+      color: #2c5158;
+      border: none;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .key:active {
+      background: #3CB371;
+      color: white;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .option-btn {
+      background: #f0fdfa;
+      border: 1px solid #b2f5ea;
+      padding: 12px;
+      border-radius: 15px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #333;
+      transition: all 0.2s;
+    }
+
+    .option-btn.selected-option {
+      background-color: #87CEFA !important;
+      border-color: #5fa8d3 !important;
+      color: #0d3b66 !important;
+      font-weight: bold;
+    }
+
+    .status-msg {
+      font-size: 12px;
+      margin-top: 5px;
+      height: 18px;
+      text-align: center;
+    }
+
+    .envelope-wrapper {
+      cursor: pointer;
+      margin: 25px 0;
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+
+    .envelope-wrapper:hover {
+      transform: scale(1.08);
+    }
+
+    .envelope-box {
+      width: 120px;
+      height: 85px;
+      background: #fdf8e2;
+      border: 2px solid #e2cb98;
+      border-radius: 10px;
+      margin: 0 auto;
+      position: relative;
+      box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 38px;
+    }
+
+    /* Grid Layout Halaman 5 */
+    .final-content-grid {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 20px;
+      align-items: center; /* Posisikan elemen tengah secara vertikal */
+    }
+
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .timer-box {
+      background: #eef8f8;
+      padding: 8px 10px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .timer-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #777;
+    }
+
+    .timer-count {
+      font-size: 14px;
+      font-weight: bold;
+      color: #2e8b57;
+      margin-top: 2px;
+    }
+
+    .memory-card {
+      border: 2px solid #3CB371;
+      border-radius: 12px;
+      padding: 4px;
+      background: #ffffff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .memory-card img {
+      width: 100%;
+      max-height: 140px;
+      border-radius: 8px;
+      display: block;
+      object-fit: cover;
+    }
+
+    /* Widget Pemutar Musik iOS Style */
+    .music-widget {
+      background: linear-gradient(135deg, #2b3038 0%, #1a1d24 100%);
+      border-radius: 16px;
+      padding: 10px 12px;
+      color: #ffffff;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .music-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+    }
+
+    .album-art {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    .song-info {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex-grow: 1;
+    }
+
+    .song-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-decoration: none;
+    }
+
+    .artist-name {
+      font-size: 11px;
+      color: #a0a5b1;
+      margin-top: 1px;
+    }
+
+    .audio-waves {
+      display: flex;
+      gap: 2px;
+      align-items: flex-end;
+      height: 14px;
+    }
+
+    .wave-bar {
+      width: 2px;
+      background: #00b4d8;
+      border-radius: 1px;
+      animation: wave 1s infinite ease-in-out alternate;
+    }
+
+    .wave-bar:nth-child(1) { height: 60%; animation-delay: 0.1s; }
+    .wave-bar:nth-child(2) { height: 100%; animation-delay: 0.3s; }
+    .wave-bar:nth-child(3) { height: 40%; animation-delay: 0.2s; }
+
+    @keyframes wave {
+      0% { height: 30%; }
+      100% { height: 100%; }
+    }
+
+    .progress-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .time-stamp {
+      font-size: 10px;
+      color: #8e939d;
+      min-width: 26px;
+    }
+
+    .progress-bar-bg {
+      flex: 1;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .progress-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: #ffffff;
+      border-radius: 2px;
+      transition: width 0.1s linear;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin-top: 2px;
+    }
+
+    .control-btn {
+      background: none;
+      border: none;
+      color: #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      transition: transform 0.1s;
+    }
+
+    .control-btn:active {
+      transform: scale(0.85);
+    }
+
+    .play-btn {
+      background: #ffffff;
+      color: #1a1d24;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+    }
+
+    .letter {
+      font-size: 13px;
+      color: #444;
+      line-height: 1.55;
+      text-align: left;
+      background: #fdfdfd;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border-left: 4px solid #3CB371;
+      max-height: 330px;
+      overflow-y: auto;
+    }
+
+    @media (max-width: 640px) {
+      .card.landscape-card {
+        max-width: 95%;
+        padding: 20px;
+      }
+      .final-content-grid {
+        grid-template-columns: 1fr;
+      }
+      .letter {
+        max-height: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="starsCanvas"></canvas>
+
+  <!-- Halaman 1 -->
+  <div class="card active" id="page-welcome">
+    <h1>I Belong to You</h1>
+    <p>I made something special for you.<br>But you have to unlock it first.</p>
+    <button class="btn" onclick="nextPage('page-pin')">Continue</button>
+  </div>
+
+  <!-- Halaman 2 -->
+  <div class="card" id="page-pin">
+    <h2>Enter Passcode 🔒</h2>
+    <div class="dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="pin-error-msg" id="pin-error"></div>
+    <div class="keypad">
+      <button class="key" onclick="pressKey('1')">1</button>
+      <button class="key" onclick="pressKey('2')">2</button>
+      <button class="key" onclick="pressKey('3')">3</button>
+      <button class="key" onclick="pressKey('4')">4</button>
+      <button class="key" onclick="pressKey('5')">5</button>
+      <button class="key" onclick="pressKey('6')">6</button>
+      <button class="key" onclick="pressKey('7')">7</button>
+      <button class="key" onclick="pressKey('8')">8</button>
+      <button class="key" onclick="pressKey('9')">9</button>
+      <button class="key" onclick="clearPin()">⌫</button>
+      <button class="key" onclick="pressKey('0')">0</button>
+      <button class="key" onclick="checkPin()">✓</button>
+    </div>
+  </div>
+
+  <!-- Halaman 3 (Kuis Terbaru) -->
+  <div class="card" id="page-quiz">
+    <h2 id="quiz-question">Pertanyaan?</h2>
+    <p>Answer correctly to gain points 🤍</p>
+    <div class="quiz-options" id="quiz-options"></div>
+    <p id="points-display" style="text-align: center;">Points: 0 / 3</p>
+    <div class="status-msg" id="status-msg"></div>
+  </div>
+
+  <!-- Halaman 4 -->
+  <div class="card" id="page-envelope">
+    <h2>A Letter For You ✉️</h2>
+    <p>Tap the envelope below...</p>
+    <div class="envelope-wrapper" onclick="nextPage('page-final')">
+      <div class="envelope-box">✉️</div>
+      <p style="font-size: 12px; color: #2e8b57; margin-top: 12px; font-weight: 500;">Tap Envelope to Open 🤍</p>
+    </div>
+  </div>
+
+  <!-- Halaman 5 -->
+  <div class="card landscape-card" id="page-final">
+    <h2>Our Story 🤍</h2>
+    
+    <div class="final-content-grid">
+      <div class="left-panel">
+        <div class="timer-box">
+          <div class="timer-title">TIME TOGETHER</div>
+          <div class="timer-count" id="timer">Loading...</div>
+        </div>
+
+        <div class="memory-card">
+          <img id="memory-img" src="jossgawin.jpg" alt="Memory Photo">
+        </div>
+
+        <!-- Widget Musik MP3 -->
+        <div class="music-widget">
+          <div class="music-header">
+            <img src="https://i.scdn.co/image/ab67616d0000b273ba5db46f4b838ef6027e6f96" alt="Ed Sheeran Perfect Cover" class="album-art">
+            <div class="song-info">
+              <span class="song-title">Perfect</span>
+              <span class="artist-name">Ed Sheeran</span>
+            </div>
+            <div class="audio-waves" id="waves" style="display: none;">
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+            </div>
+          </div>
+
+          <div class="progress-container">
+            <span class="time-stamp" id="current-time">0:00</span>
+            <div class="progress-bar-bg" onclick="seekAudio(event)">
+              <div class="progress-bar-fill" id="progress-fill"></div>
+            </div>
+            <span class="time-stamp" id="duration-time">-4:23</span>
+          </div>
+
+          <div class="controls">
+            <button class="control-btn" onclick="rewind10()"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg></button>
+            <button class="control-btn play-btn" onclick="togglePlay()"><span id="play-icon">▶</span></button>
+            <button class="control-btn" onclick="forward10()"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg></button>
+          </div>
+
+          <!-- File Audio MP3 dari Folder Lokal -->
+          <audio id="bg-audio" src="Ed Sheeran - Perfect (Official Music Video).mp3"></audio>
+        </div>
+      </div>
+
+      <div class="letter">
+        <p>happy 7 mensive sayang🤍🤍...aku ngga pernah nyangka kalau kehadiran mas bakal sepengaruh ini dalam hidupku. mas selalu yakinin aku saat dulu kita masih dekat, sikap mas yang itu buat aku selalu kecintaan sama mas...</p>
+        <br>
+        <p>terimakasih ya mas sudah memilih aku jadi pasangan mas dan bertahan sampai saat ini. terimakasih sudah menjadi tempat berpulangnya aku dan anak-anak kita....terimakasih sudah menjadi suami dan ayah yang hebat untuk keluarga kita mas, maaf ya terkadang sifat aku selalu kekanakan dan bandel sekali tidak nurut kepada mas😓😓</p>
+        <br>
+        <p>apapun yang bakal kita hadapi didepan nanti kita hadapi bersama ya jangan sampai ada kata saling menyesal di antara kitaa, lebih terbuka lagi ya mas saat dengan aku, ngga bakal aku gigit kok kalau mas mau cerita apapun 😋 i love you so much sayangg muahh🤍😘</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('starsCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const stars = [];
+    const numStars = 45;
+    const starColors = ['#4a4e69', '#3f37c9', '#4895ef', '#e2afff', '#ffffff', '#e9d8a6'];
+
+    for (let i = 0; i < numStars; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 7 + 3,
+        speedY: Math.random() * 1.2 + 0.4,
+        speedX: (Math.random() - 0.5) * 0.2,
+        color: starColors[Math.floor(Math.random() * starColors.length)]
+      });
+    }
+
+    function draw4PointStar(cx, cy, size, color) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.fillStyle = color;
+      
+      ctx.moveTo(cx, cy - size);
+      ctx.quadraticCurveTo(cx, cy, cx + size, cy);
+      ctx.quadraticCurveTo(cx, cy, cx + size, cy);
+      ctx.quadraticCurveTo(cx, cy, cx, cy + size);
+      ctx.quadraticCurveTo(cx, cy, cx - size, cy);
+      ctx.quadraticCurveTo(cx, cy, cx, cy - size);
+
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function animateStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      stars.forEach(star => {
+        star.y += star.speedY;
+        star.x += star.speedX;
+
+        if (star.y > canvas.height + 10) {
+          star.y = -10;
+          star.x = Math.random() * canvas.width;
+        }
+
+        draw4PointStar(star.x, star.y, star.size, star.color);
+      });
+      requestAnimationFrame(animateStars);
+    }
+    animateStars();
+
+    const CORRECT_PIN = "0000";
+    let inputPin = "";
+
+    // Data Kuis Baru
+    const quizData = [
+      {
+        question: "Bulan ke berapa kita pertama kali bertemu?",
+        options: ["April", "Maret", "Oktober"],
+        correct: [0] // April
+      },
+      {
+        question: "Apa yang mas lakukan kalau mas lagi kangen sama aku?",
+        options: ["cuek", "kirim pesan ke aku", "biasa aja"],
+        correct: [1] // kirim pesan ke aku
+      },
+      {
+        question: "Rate rasa cinta mas ke aku",
+        options: ["100000%", "50%", "∞"],
+        correct: [0, 2] // 100000% atau ∞
+      }
+    ];
+
+    let currentQuizIndex = 0;
+    let points = 0;
+    const startDate = new Date("2026-03-11T00:00:00");
+
+    function nextPage(pageId) {
+      document.querySelectorAll('.card').forEach(card => card.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      if (pageId === 'page-quiz') loadQuiz();
+      if (pageId === 'page-final') startTimer();
+    }
+
+    function pressKey(num) {
+      if (inputPin.length < 4) {
+        inputPin += num;
+        updateDots();
+      }
+    }
+
+    function clearPin() {
+      inputPin = inputPin.slice(0, -1);
+      updateDots();
+      document.getElementById('pin-error').innerText = "";
+    }
+
+    function updateDots() {
+      const dots = document.querySelectorAll('.dot');
+      dots.forEach((dot, idx) => {
+        if (idx < inputPin.length) dot.classList.add('filled');
+        else dot.classList.remove('filled');
+      });
+    }
+
+    function checkPin() {
+      const errorDiv = document.getElementById('pin-error');
+      if (inputPin === CORRECT_PIN) {
+        errorDiv.innerText = "";
+        nextPage('page-quiz');
+      } else {
+        errorDiv.innerText = "Incorrect passcode, try again dear! 💖";
+        inputPin = "";
+        updateDots();
+      }
+    }
+
+    function loadQuiz() {
+      const currentQuiz = quizData[currentQuizIndex];
+      document.getElementById('quiz-question').innerText = currentQuiz.question;
+      const optionsContainer = document.getElementById('quiz-options');
+      optionsContainer.innerHTML = '';
+      document.getElementById('status-msg').innerText = '';
+
+      currentQuiz.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt;
+        btn.onclick = () => selectAnswer(idx, btn);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function selectAnswer(selectedIndex, btnElement) {
+      const currentQuiz = quizData[currentQuizIndex];
+      const statusMsg = document.getElementById('status-msg');
+
+      document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected-option'));
+      btnElement.classList.add('selected-option');
+
+      if (currentQuiz.correct.includes(selectedIndex)) {
+        points++;
+        document.getElementById('points-display').innerText = `Points: ${points} / ${quizData.length}`;
+        statusMsg.innerText = "Correct! ✔";
+        statusMsg.style.color = "green";
+
+        setTimeout(() => {
+          currentQuizIndex++;
+          if (currentQuizIndex < quizData.length) {
+            loadQuiz();
+          } else {
+            nextPage('page-envelope');
+          }
+        }, 800);
+      } else {
+        statusMsg.innerText = "Oops wrong answer — try again dear ✗";
+        statusMsg.style.color = "#e63946";
+      }
+    }
+
+    function startTimer() {
+      setInterval(() => {
+        const now = new Date();
+        const diff = now - startDate;
+
+        if (diff < 0) {
+          document.getElementById('timer').innerText = "Not started yet";
+          return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+
+        document.getElementById('timer').innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+      }, 1000);
+    }
+
+    const audio = document.getElementById('bg-audio');
+    const playIcon = document.getElementById('play-icon');
+    const progressFill = document.getElementById('progress-fill');
+    const currentTimeElem = document.getElementById('current-time');
+    const durationTimeElem = document.getElementById('duration-time');
+    const waves = document.getElementById('waves');
+
+    function togglePlay() {
+      if (audio.paused) {
+        audio.play();
+        playIcon.innerText = '❚❚';
+        waves.style.display = 'flex';
+      } else {
+        audio.pause();
+        playIcon.innerText = '▶';
+        waves.style.display = 'none';
+      }
+    }
+
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressFill.style.width = percent + '%';
+        currentTimeElem.innerText = formatTime(audio.currentTime);
+        
+        const remaining = audio.duration - audio.currentTime;
+        durationTimeElem.innerText = '-' + formatTime(remaining);
+      }
+    });
+
+    audio.addEventListener('ended', () => {
+      playIcon.innerText = '▶';
+      waves.style.display = 'none';
+      progressFill.style.width = '0%';
+    });
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    function rewind10() {
+      audio.currentTime = Math.max(0, audio.currentTime - 10);
+    }
+
+    function forward10() {
+      audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+    }
+
+    function seekAudio(e) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const width = rect.width;
+      if (audio.duration) {
+        audio.currentTime = (clickX / width) * audio.duration;
+      }
+    }
+  </script>
+</body>
+</html>
